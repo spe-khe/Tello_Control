@@ -3,7 +3,8 @@
 #include <string.h>
 
 // Set WiFi credentials
-#define WIFI_SSID "TELLO-638AB9"
+#define WIFI_SSID_1 "TELLO-638AB9"
+#define WIFI_SSID_2 "RMTT-9AFFE8"
 #define WIFI_PASS ""
 #define UDP_RX_PORT 8890
 #define UDP_TX_PORT 8889
@@ -111,26 +112,13 @@ void loop() {
 			}
 			else
 			{
-				if (!strcmp(message, "!connect"))
+				if (!strcmp(message, "!connect_1"))
 				{
-					WiFi.begin(WIFI_SSID, WIFI_PASS);
-					// Connecting to WiFi...
-					//Serial.print("Connecting to ");
-					//Serial.println(WIFI_SSID);
-					// Loop continuously while WiFi is not connected
-					while (WiFi.status() != WL_CONNECTED)
-					{
-						delay(100);
-					}
-					UDP.begin(UDP_TX_PORT);
-					// Connected to WiFi
-					delay(500);
-					Serial.println("!connected");
-					//Serial.println();
-					lastMillis = 0;
-					emergency = false;
-					land = false;
-					heartbeat = false;
+					wifiConnect(WIFI_SSID_1);
+				}
+				else if (!strcmp(message, "!connect_2"))
+				{
+					wifiConnect(WIFI_SSID_2);
 				}
 				else if (!strcmp(message, "!reset"))
 				{
@@ -170,4 +158,26 @@ void loop() {
 		
 	}
 
+}
+
+void wifiConnect(const char* ssid)
+{
+	WiFi.begin(ssid, WIFI_PASS);
+	// Connecting to WiFi...
+	//Serial.print("Connecting to ");
+	//Serial.println(WIFI_SSID);
+	// Loop continuously while WiFi is not connected
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(100);
+	}
+	UDP.begin(UDP_TX_PORT);
+	// Connected to WiFi
+	delay(500);
+	Serial.println("!connected");
+	//Serial.println();
+	lastMillis = 0;
+	emergency = false;
+	land = false;
+	heartbeat = false;
 }

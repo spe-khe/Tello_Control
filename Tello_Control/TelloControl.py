@@ -4,18 +4,26 @@ import serial
 class Tello:
     """Klasse für die Steuerung eines Tello Talent Quadrokopters"""
 
-    def __init__(self, port: str):
+    def __init__(self, port: str, expansion: bool = False):
         """
         Verbindung mit dem Quadrokopter herstellen
         :param port: Serieller Port, an den der Adapter angeschlossen ist
+        :param expansion: True, wenn das Erweiterungsmodul verbaut ist
         """
         self.serial = serial.Serial(port=port, baudrate=115200)
         self.serial.flushInput()
         self.serial.flushOutput()
-        self.serial.write(b'!connect')
+        wifi_id = 1
+        if expansion:
+            wifi_id = 2
+        self.serial.write(bytearray('!connect_' + str(wifi_id), encoding="utf_8"))
         self._await_response('!connected')
 
     def writeCommand(self, message: str):
+        """
+        Sende einen Befehl direkt an den Quadrokopter bzw. de Controller
+        :param message: der Befehl
+        """
         self.serial.write(bytearray(message, encoding='utf-8'))
 
     def goRelative(self, x: int, y: int, z: int, speed: int):
@@ -30,6 +38,9 @@ class Tello:
         self._await_response('ok')
 
     def __del__(self):
+        """
+        Destruktor-Methode, schließt der seriellen Port
+        """
         self.serial.close()
 
     def takeoff(self):
@@ -44,7 +55,7 @@ class Tello:
         Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn
         :param angle: Winkel in Grad
         """
-        self.serial.write(bytearray(f'cw {angle}',  encoding="utf-8"))
+        self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
         self._await_response('ok')
 
     def flip(self, direction: str):
@@ -102,3 +113,57 @@ class Tello:
         self.serial.write(b'battery?')
         msg = self.serial.readline()
         return int(msg)
+
+    def get_distance(self):
+        """
+        Frage den Messwert des Entfernungsmessers ab. Dies ist nur möglich, wenn das Erweiterungsmodul mit dem
+        Entfernungsmesser verbaut ist.
+        :return: Entfernung in mm
+        """
+        self.serial.write(b'EXT tof?')
+        msg = self.serial.readline()
+        if len(msg) <= 2:
+            msg = self.serial.readline()
+        return int(msg[4:])
+
+    def led(self, r: int, g: int, b: int):
+        """
+        Setze die Farbe der LED
+        :param r: Rot-Wert der LED (0-255)
+        :param g: Grün-Wert der LED (0-255)
+        :param b: Blau-Wert der LED (0-255)
+        """
+        self.serial.write(bytearray(f"EXT led {r} {g} {b}", encoding="utf-8"))
+        self._await_response("led ok")
+
+    def blink_led(self, r1: int, g1: int, b1: int, r2: int, g2: int, b2: int, frequency: float):
+        """
+        Blinke die LED in zwei Farben
+        :param r1: Rot-Wert der ersten Farbe (0-255)
+        :param g1: Grün-Wert der ersten Farbe (0-255)
+        :param b1: Blau-Wert der ersten Farbe (0-255)
+        :param r2: Rot-Wert der zeiten Farbe (0-255)
+        :param g2: Grün-Wert der zeiten Farbe (0-255)
+        :param b2: Blau-Wert der zeiten Farbe (0-255)
+        :param frequency: Blinkfrequenz (0.1-10)
+        """
+        self.serial.write(bytearray(f"EXT led bl {frequency} {r1} {g1} {b1} {r2} {g2} {b2}", encoding="utf-8"))
+        self._await_response("led ok")
+
+    def print_matrix(self, message: str, color: str, freq: float, direction: str = 'l'):
+        """
+        Zeige einen Text auf der LED-Matrix an
+        :param message: der anzuzeigende Text
+        :param color: Farbe des Textes: 'r', 'b' oder 'p' für Rot, Blau oder Violett
+        :param freq: Scroll-Geschwindigkeit (0.1-2.5)
+        :param direction: Scroll-Richtung: 'l'/'r'/'u'/'d' für links/rechts/hoch/runter
+        """
+        self.serial.write(bytearray(f"EXT mled {direction} {color} {freq} {message}", encoding="utf-8"))
+        self._await_response("matrix ok")
+
+    def clear_matrix(self):
+        """
+        Lösche die Anzeige der LED-Matrix
+        """
+        self.serial.write(b'EXT mled sc')
+        self._await_response("matrix ok")

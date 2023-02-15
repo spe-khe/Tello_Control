@@ -2,17 +2,13 @@ from TelloControl import Tello
 import time
 
 try:
-    t = Tello("COM6")
+    t = Tello("COM6", True)
+    t.clear_matrix()
     print(t.get_battery())
-    t.takeoff()
-    t.goRelative(50, 50, 50, 50)
-    t.goRelative(-50, -50, -50, 50)
-    t.rotate(90)
-    t.flip("f")
-    t.land()
-    time.sleep(5)
-    t.throwfly()
-    t.land()
+    t.led(0, 255, 255)
+    time.sleep(3)
+    t.blink_led(255, 0, 0, 0, 255, 0, 5.5)
+    t.print_matrix("Hello World", "r", 2.5)
 except Exception as ex:
     del t
     raise ex

@@ -114,6 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\Users\z003yywu\AppData\Local\Arduino15\packages\esp8266\hardware\esp8266\2.5.0\libraries\ESP8266WiFi\src\WiFiUdp.h" />
+    <ClInclude Include="Tello_Sender.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
