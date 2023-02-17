@@ -7,7 +7,7 @@ class Tello:
     def __init__(self, port: str, expansion: bool = False):
         """
         Verbindung mit dem Quadrokopter herstellen
-        :param port: Serieller Port, an den der Adapter angeschlossen ist
+        :param port: serieller Port, an den der Adapter angeschlossen ist
         :param expansion: True, wenn das Erweiterungsmodul verbaut ist
         """
         self.serial = serial.Serial(port=port, baudrate=115200)
@@ -166,4 +166,13 @@ class Tello:
         Lösche die Anzeige der LED-Matrix
         """
         self.serial.write(b'EXT mled sc')
+        self._await_response("matrix ok")
+
+    def print_char(self, char: str, color: str):
+        """
+        Zeige ein einzelnes Zeichen statisch auf der LED-Matrix an
+        :param char: das anzuzeigende Zeichen
+        :param color: Farbe des Zeichens: 'r', 'b' oder 'p' für Rot, Blau oder Violett
+        """
+        self.serial.write(bytearray(f"EXT mled s {color} {char}", encoding="utf-8"))
         self._await_response("matrix ok")
