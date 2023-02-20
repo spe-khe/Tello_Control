@@ -536,121 +536,60 @@
         self.serial.write(bytearray(<span class="hljs-string">f"EXT mled s <span class="hljs-subst">{color}</span> <span class="hljs-subst">{char}</span>"</span>, encoding=<span class="hljs-string">"utf-8"</span>))
         self._await_response(<span class="hljs-string">"matrix ok"</span>)</code></pre>
 </details>
+
+
 <h3>Methods</h3>
 <dl>
-<dt id="TelloControl.Tello.flip"><code class="name flex">
-<span><span class="ident">flip</span></span>(<span>direction)</span>
+<dt id="TelloControl.Tello.takeoff"><code class="name flex">
+<span><span class="ident">takeoff</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Führe ein Salto in die angegebene Richtung durch. Dazu muss der Akkustand mindestens bei 50 % sein.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>direction</code></strong> : <code>str</code></dt>
-<dd>'f', 'b', 'l' oder 'r' für vorwärts, rückwärts, links oder rechts</dd>
-</dl></div>
+<div class="desc"><p>Hebe ab</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flip</span>(<span class="hljs-params">self, direction</span>):</span>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">takeoff</span>(<span class="hljs-params">self</span>):</span>
     <span class="hljs-string">"""
-    Führe ein Salto in die angegebene Richtung durch. Dazu muss der Akkustand mindestens bei 50 % sein.
-
-    Parameters
-    ----------
-    direction: str
-        'f', 'b', 'l' oder 'r' für vorwärts, rückwärts, links oder rechts
+    Hebe ab
     """</span>
-    self.serial.write(bytearray(<span class="hljs-string">'flip '</span> + direction, encoding=<span class="hljs-string">"utf-8"</span>))
+    self.serial.write(<span class="hljs-string">b'takeoff'</span>)
     self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
 </details>
 </dd>
-<dt id="TelloControl.Tello.get_battery"><code class="name flex">
-<span><span class="ident">get_battery</span></span>(<span>)</span>
+<dt id="TelloControl.Tello.throwfly"><code class="name flex">
+<span><span class="ident">throwfly</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Frage den Batteriestand des Quadrokopters an</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>battery</code></strong> : <code>int</code></dt>
-<dd>Batteriestand (0-100)</dd>
-</dl></div>
+<div class="desc"><p>Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_battery</span>(<span class="hljs-params">self</span>):</span>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">throwfly</span>(<span class="hljs-params">self</span>):</span>
     <span class="hljs-string">"""
-    Frage den Batteriestand des Quadrokopters an
-
-    Returns
-    -------
-    battery: int
-        Batteriestand (0-100)
+    Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern
     """</span>
-    self.serial.write(<span class="hljs-string">b'battery?'</span>)
-    msg = self.serial.readline()
-    <span class="hljs-keyword">return</span> int(msg)</code></pre>
+    self.serial.write(<span class="hljs-string">b'throwfly'</span>)
+    print(<span class="hljs-string">"Werfe den Quadrokopter in die Luft!"</span>)
+    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
 </details>
 </dd>
-<dt id="TelloControl.Tello.get_distance"><code class="name flex">
-<span><span class="ident">get_distance</span></span>(<span>)</span>
+<dt id="TelloControl.Tello.land"><code class="name flex">
+<span><span class="ident">land</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Frage den Messwert des Entfernungsmessers ab. Dies ist nur möglich, wenn das Erweiterungsmodul mit dem
-Entfernungsmesser verbaut ist.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>distance</code></strong> : <code>int</code></dt>
-<dd>Entfernung in mm</dd>
-</dl></div>
+<div class="desc"><p>Lande den Quadrokopter</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_distance</span>(<span class="hljs-params">self</span>):</span>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">land</span>(<span class="hljs-params">self</span>):</span>
     <span class="hljs-string">"""
-    Frage den Messwert des Entfernungsmessers ab. Dies ist nur möglich, wenn das Erweiterungsmodul mit dem
-    Entfernungsmesser verbaut ist.
-
-    Returns
-    -------
-    distance: int
-        Entfernung in mm
+    Lande den Quadrokopter
     """</span>
-    self.serial.write(<span class="hljs-string">b'EXT tof?'</span>)
-    msg = self.serial.readline()
-    <span class="hljs-keyword">if</span> len(msg) &lt;= <span class="hljs-number">2</span>:
-        msg = self.serial.readline()
-    <span class="hljs-keyword">return</span> int(msg[<span class="hljs-number">4</span>:])</code></pre>
-</details>
-</dd>
-<dt id="TelloControl.Tello.get_speed"><code class="name flex">
-<span><span class="ident">get_speed</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Frage die aktuelle Geschwindigkeit des Quadrokopters an</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>speed</code></strong> : <code>float</code></dt>
-<dd>aktuelle Geschwindigkeit in cm/s</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_speed</span>(<span class="hljs-params">self</span>):</span>
-    <span class="hljs-string">"""
-    Frage die aktuelle Geschwindigkeit des Quadrokopters an
-
-    Returns
-    -------
-    speed: float
-        aktuelle Geschwindigkeit in cm/s
-    """</span>
-    self.serial.write(<span class="hljs-string">b'speed?'</span>)
-    msg = self.serial.readline()
-    <span class="hljs-keyword">return</span> float(msg)</code></pre>
+    self.serial.write(<span class="hljs-string">b'land'</span>)
+    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
 </details>
 </dd>
 <dt id="TelloControl.Tello.go_relative"><code class="name flex">
@@ -692,21 +631,163 @@ Entfernungsmesser verbaut ist.</p>
     self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
 </details>
 </dd>
-<dt id="TelloControl.Tello.land"><code class="name flex">
-<span><span class="ident">land</span></span>(<span>)</span>
+<dt id="TelloControl.Tello.rotate"><code class="name flex">
+<span><span class="ident">rotate</span></span>(<span>angle)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Lande den Quadrokopter</p></div>
+<div class="desc"><p>Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>angle</code></strong> : <code>int</code></dt>
+<dd>Winkel in Grad</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">land</span>(<span class="hljs-params">self</span>):</span>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">rotate</span>(<span class="hljs-params">self, angle</span>):</span>
     <span class="hljs-string">"""
-    Lande den Quadrokopter
+    Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn
+
+    Parameters
+    ----------
+    angle: int
+        Winkel in Grad
     """</span>
-    self.serial.write(<span class="hljs-string">b'land'</span>)
+    self.serial.write(bytearray(<span class="hljs-string">f'cw <span class="hljs-subst">{angle}</span>'</span>, encoding=<span class="hljs-string">"utf-8"</span>))
     self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
+</details>
+</dd>
+<dt id="TelloControl.Tello.stop"><code class="name flex">
+<span><span class="ident">stop</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Stoppe die Bewegung der Drone</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span>(<span class="hljs-params">self</span>):</span>
+    <span class="hljs-string">"""
+    Stoppe die Bewegung der Drone
+    """</span>
+    self.serial.write(<span class="hljs-string">b'throwfly'</span>)
+    msg = self.serial.readline()</code></pre>
+</details>
+</dd>
+<dt id="TelloControl.Tello.flip"><code class="name flex">
+<span><span class="ident">flip</span></span>(<span>direction)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Führe ein Salto in die angegebene Richtung durch. Dazu muss der Akkustand mindestens bei 50 % sein.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>direction</code></strong> : <code>str</code></dt>
+<dd>'f', 'b', 'l' oder 'r' für vorwärts, rückwärts, links oder rechts</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">flip</span>(<span class="hljs-params">self, direction</span>):</span>
+    <span class="hljs-string">"""
+    Führe ein Salto in die angegebene Richtung durch. Dazu muss der Akkustand mindestens bei 50 % sein.
+
+    Parameters
+    ----------
+    direction: str
+        'f', 'b', 'l' oder 'r' für vorwärts, rückwärts, links oder rechts
+    """</span>
+    self.serial.write(bytearray(<span class="hljs-string">'flip '</span> + direction, encoding=<span class="hljs-string">"utf-8"</span>))
+    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
+</details>
+</dd>
+<dt id="TelloControl.Tello.get_battery"><code class="name flex">
+<span><span class="ident">get_battery</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Frage den Batteriestand des Quadrokopters ab</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>battery</code></strong> : <code>int</code></dt>
+<dd>Batteriestand (0-100)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_battery</span>(<span class="hljs-params">self</span>):</span>
+    <span class="hljs-string">"""
+    Frage den Batteriestand des Quadrokopters ab
+
+    Returns
+    -------
+    battery: int
+        Batteriestand (0-100)
+    """</span>
+    self.serial.write(<span class="hljs-string">b'battery?'</span>)
+    msg = self.serial.readline()
+    <span class="hljs-keyword">return</span> int(msg)</code></pre>
+</details>
+</dd>
+<dt id="TelloControl.Tello.get_speed"><code class="name flex">
+<span><span class="ident">get_speed</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Frage die aktuelle Geschwindigkeit des Quadrokopters ab</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>speed</code></strong> : <code>float</code></dt>
+<dd>aktuelle Geschwindigkeit in cm/s</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_speed</span>(<span class="hljs-params">self</span>):</span>
+    <span class="hljs-string">"""
+    Frage die aktuelle Geschwindigkeit des Quadrokopters ab
+
+    Returns
+    -------
+    speed: float
+        aktuelle Geschwindigkeit in cm/s
+    """</span>
+    self.serial.write(<span class="hljs-string">b'speed?'</span>)
+    msg = self.serial.readline()
+    <span class="hljs-keyword">return</span> float(msg)</code></pre>
+</details>
+</dd>
+<dt id="TelloControl.Tello.get_distance"><code class="name flex">
+<span><span class="ident">get_distance</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Frage den Messwert des Entfernungsmessers ab. Dies ist nur möglich, wenn das Erweiterungsmodul mit dem
+Entfernungsmesser verbaut ist.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>distance</code></strong> : <code>int</code></dt>
+<dd>Entfernung in mm</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_distance</span>(<span class="hljs-params">self</span>):</span>
+    <span class="hljs-string">"""
+    Frage den Messwert des Entfernungsmessers ab. Dies ist nur möglich, wenn das Erweiterungsmodul mit dem
+    Entfernungsmesser verbaut ist.
+
+    Returns
+    -------
+    distance: int
+        Entfernung in mm
+    """</span>
+    self.serial.write(<span class="hljs-string">b'EXT tof?'</span>)
+    msg = self.serial.readline()
+    <span class="hljs-keyword">if</span> len(msg) &lt;= <span class="hljs-number">2</span>:
+        msg = self.serial.readline()
+    <span class="hljs-keyword">return</span> int(msg[<span class="hljs-number">4</span>:])</code></pre>
 </details>
 </dd>
 <dt id="TelloControl.Tello.led"><code class="name flex">
@@ -882,90 +963,11 @@ Entfernungsmesser verbaut ist.</p>
     self._await_response(<span class="hljs-string">"matrix ok"</span>)</code></pre>
 </details>
 </dd>
-<dt id="TelloControl.Tello.rotate"><code class="name flex">
-<span><span class="ident">rotate</span></span>(<span>angle)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>angle</code></strong> : <code>int</code></dt>
-<dd>Winkel in Grad</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">rotate</span>(<span class="hljs-params">self, angle</span>):</span>
-    <span class="hljs-string">"""
-    Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn
-
-    Parameters
-    ----------
-    angle: int
-        Winkel in Grad
-    """</span>
-    self.serial.write(bytearray(<span class="hljs-string">f'cw <span class="hljs-subst">{angle}</span>'</span>, encoding=<span class="hljs-string">"utf-8"</span>))
-    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
-</details>
-</dd>
-<dt id="TelloControl.Tello.stop"><code class="name flex">
-<span><span class="ident">stop</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Stoppe die Bewegung der Drone</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span>(<span class="hljs-params">self</span>):</span>
-    <span class="hljs-string">"""
-    Stoppe die Bewegung der Drone
-    """</span>
-    self.serial.write(<span class="hljs-string">b'throwfly'</span>)
-    msg = self.serial.readline()</code></pre>
-</details>
-</dd>
-<dt id="TelloControl.Tello.takeoff"><code class="name flex">
-<span><span class="ident">takeoff</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Hebe ab</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">takeoff</span>(<span class="hljs-params">self</span>):</span>
-    <span class="hljs-string">"""
-    Hebe ab
-    """</span>
-    self.serial.write(<span class="hljs-string">b'takeoff'</span>)
-    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
-</details>
-</dd>
-<dt id="TelloControl.Tello.throwfly"><code class="name flex">
-<span><span class="ident">throwfly</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">throwfly</span>(<span class="hljs-params">self</span>):</span>
-    <span class="hljs-string">"""
-    Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern
-    """</span>
-    self.serial.write(<span class="hljs-string">b'throwfly'</span>)
-    print(<span class="hljs-string">"Werfe den Quadrokopter in die Luft!"</span>)
-    self._await_response(<span class="hljs-string">'ok'</span>)</code></pre>
-</details>
-</dd>
 <dt id="TelloControl.Tello.write_command"><code class="name flex">
 <span><span class="ident">write_command</span></span>(<span>message)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Sende einen Befehl direkt an den Quadrokopter bzw. de Controller</p>
+<div class="desc"><p>Sende einen Befehl direkt an den Quadrokopter bzw. den Controller</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>message</code></strong> : <code>str</code></dt>
@@ -977,7 +979,7 @@ Entfernungsmesser verbaut ist.</p>
 </summary>
 <pre><code class="python hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">write_command</span>(<span class="hljs-params">self, message</span>):</span>
     <span class="hljs-string">"""
-    Sende einen Befehl direkt an den Quadrokopter bzw. de Controller
+    Sende einen Befehl direkt an den Quadrokopter bzw. den Controller
 
     Parameters
     ----------
@@ -1003,21 +1005,21 @@ Entfernungsmesser verbaut ist.</p>
 <li>
 <h4><code><a title="TelloControl.Tello" href="#TelloControl.Tello">Tello</a></code></h4>
 <ul class="two-column">
+<li><code><a title="TelloControl.Tello.takeoff" href="#TelloControl.Tello.takeoff">takeoff</a></code></li>
+<li><code><a title="TelloControl.Tello.throwfly" href="#TelloControl.Tello.throwfly">throwfly</a></code></li>
+<li><code><a title="TelloControl.Tello.land" href="#TelloControl.Tello.land">land</a></code></li>
+<li><code><a title="TelloControl.Tello.go_relative" href="#TelloControl.Tello.go_relative">go_relative</a></code></li>
+<li><code><a title="TelloControl.Tello.rotate" href="#TelloControl.Tello.rotate">rotate</a></code></li>
+<li><code><a title="TelloControl.Tello.stop" href="#TelloControl.Tello.stop">stop</a></code></li>
 <li><code><a title="TelloControl.Tello.flip" href="#TelloControl.Tello.flip">flip</a></code></li>
 <li><code><a title="TelloControl.Tello.get_battery" href="#TelloControl.Tello.get_battery">get_battery</a></code></li>
-<li><code><a title="TelloControl.Tello.get_distance" href="#TelloControl.Tello.get_distance">get_distance</a></code></li>
 <li><code><a title="TelloControl.Tello.get_speed" href="#TelloControl.Tello.get_speed">get_speed</a></code></li>
-<li><code><a title="TelloControl.Tello.go_relative" href="#TelloControl.Tello.go_relative">go_relative</a></code></li>
-<li><code><a title="TelloControl.Tello.land" href="#TelloControl.Tello.land">land</a></code></li>
+<li><code><a title="TelloControl.Tello.get_distance" href="#TelloControl.Tello.get_distance">get_distance</a></code></li>
 <li><code><a title="TelloControl.Tello.led" href="#TelloControl.Tello.led">led</a></code></li>
 <li><code><a title="TelloControl.Tello.led_blink" href="#TelloControl.Tello.led_blink">led_blink</a></code></li>
 <li><code><a title="TelloControl.Tello.matrix_clear" href="#TelloControl.Tello.matrix_clear">matrix_clear</a></code></li>
 <li><code><a title="TelloControl.Tello.matrix_print" href="#TelloControl.Tello.matrix_print">matrix_print</a></code></li>
 <li><code><a title="TelloControl.Tello.matrix_print_char" href="#TelloControl.Tello.matrix_print_char">matrix_print_char</a></code></li>
-<li><code><a title="TelloControl.Tello.rotate" href="#TelloControl.Tello.rotate">rotate</a></code></li>
-<li><code><a title="TelloControl.Tello.stop" href="#TelloControl.Tello.stop">stop</a></code></li>
-<li><code><a title="TelloControl.Tello.takeoff" href="#TelloControl.Tello.takeoff">takeoff</a></code></li>
-<li><code><a title="TelloControl.Tello.throwfly" href="#TelloControl.Tello.throwfly">throwfly</a></code></li>
 <li><code><a title="TelloControl.Tello.write_command" href="#TelloControl.Tello.write_command">write_command</a></code></li>
 </ul>
 </li>
