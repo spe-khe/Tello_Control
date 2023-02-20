@@ -5,7 +5,7 @@ import time
 class Tello:
     """Klasse für die Steuerung eines Tello Talent Quadrokopters"""
 
-    def __init__(self, port, expansion = False):
+    def __init__(self, port, expansion=False):
         """
         Verbindung mit dem Quadrokopter herstellen
 
@@ -28,16 +28,33 @@ class Tello:
         self.serial.flushInput()
         self.serial.flushOutput()
 
-    def write_command(self, message):
+    def __del__(self):
         """
-        Sende einen Befehl direkt an den Quadrokopter bzw. de Controller
+        Destruktor-Methode, schließt der seriellen Port
+        """
+        self.serial.close()
 
-        Parameters
-        ----------
-        message: str
-            der Befehl
+    def takeoff(self):
         """
-        self.serial.write(bytearray(message, encoding='utf-8'))
+        Hebe ab
+        """
+        self.serial.write(b'takeoff')
+        self._await_response('ok')
+
+    def throwfly(self):
+        """
+        Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern
+        """
+        self.serial.write(b'throwfly')
+        print("Werfe den Quadrokopter in die Luft!")
+        self._await_response('ok')
+
+    def land(self):
+        """
+        Lande den Quadrokopter
+        """
+        self.serial.write(b'land')
+        self._await_response('ok')
 
     def go_relative(self, x, y, z, speed):
         """
@@ -57,19 +74,6 @@ class Tello:
         self.serial.write(bytearray(f"go {x} {y} {z} {speed}", encoding='utf-8'))
         self._await_response('ok')
 
-    def __del__(self):
-        """
-        Destruktor-Methode, schließt der seriellen Port
-        """
-        self.serial.close()
-
-    def takeoff(self):
-        """
-        Hebe ab
-        """
-        self.serial.write(b'takeoff')
-        self._await_response('ok')
-
     def rotate(self, angle):
         """
         Drehe den Quadrokopter um den spezifizierten Winkel im Uhrzeigersinn
@@ -81,6 +85,13 @@ class Tello:
         """
         self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
         self._await_response('ok')
+
+    def stop(self):
+        """
+        Stoppe die Bewegung der Drone
+        """
+        self.serial.write(b'throwfly')
+        msg = self.serial.readline()
 
     def flip(self, direction):
         """
@@ -94,53 +105,9 @@ class Tello:
         self.serial.write(bytearray('flip ' + direction, encoding="utf-8"))
         self._await_response('ok')
 
-    def land(self):
-        """
-        Lande den Quadrokopter
-        """
-        self.serial.write(b'land')
-        self._await_response('ok')
-
-    def throwfly(self):
-        """
-        Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern
-        """
-        self.serial.write(b'throwfly')
-        print("Werfe den Quadrokopter in die Luft!")
-        self._await_response('ok')
-
-    def _await_response(self, expected):
-        msg = self.serial.readline()
-        print(msg)
-        if len(msg) <= 2:
-            msg = self.serial.readline()
-            print(msg)
-        if expected not in str(msg):
-            raise Exception(msg)
-
-    def stop(self):
-        """
-        Stoppe die Bewegung der Drone
-        """
-        self.serial.write(b'throwfly')
-        msg = self.serial.readline()
-
-    def get_speed(self):
-        """
-        Frage die aktuelle Geschwindigkeit des Quadrokopters an
-
-        Returns
-        -------
-        speed: float
-            aktuelle Geschwindigkeit in cm/s
-        """
-        self.serial.write(b'speed?')
-        msg = self.serial.readline()
-        return float(msg)
-
     def get_battery(self):
         """
-        Frage den Batteriestand des Quadrokopters an
+        Frage den Batteriestand des Quadrokopters ab
 
         Returns
         -------
@@ -150,6 +117,19 @@ class Tello:
         self.serial.write(b'battery?')
         msg = self.serial.readline()
         return int(msg)
+
+    def get_speed(self):
+        """
+        Frage die aktuelle Geschwindigkeit des Quadrokopters ab
+
+        Returns
+        -------
+        speed: float
+            aktuelle Geschwindigkeit in cm/s
+        """
+        self.serial.write(b'speed?')
+        msg = self.serial.readline()
+        return float(msg)
 
     def get_distance(self):
         """
@@ -207,7 +187,14 @@ class Tello:
         self.serial.write(bytearray(f"EXT led bl {frequency} {r1} {g1} {b1} {r2} {g2} {b2}", encoding="utf-8"))
         self._await_response("led ok")
 
-    def matrix_print(self, message, color, freq, direction = 'l'):
+    def matrix_clear(self):
+        """
+        Lösche die Anzeige der LED-Matrix
+        """
+        self.serial.write(b'EXT mled sc')
+        self._await_response("matrix ok")
+
+    def matrix_print(self, message, color, freq, direction='l'):
         """
         Zeige einen Text auf der LED-Matrix an
 
@@ -225,13 +212,6 @@ class Tello:
         self.serial.write(bytearray(f"EXT mled {direction} {color} {freq} {message}", encoding="utf-8"))
         self._await_response("matrix ok")
 
-    def matrix_clear(self):
-        """
-        Lösche die Anzeige der LED-Matrix
-        """
-        self.serial.write(b'EXT mled sc')
-        self._await_response("matrix ok")
-
     def matrix_print_char(self, char, color):
         """
         Zeige ein einzelnes Zeichen statisch auf der LED-Matrix an
@@ -245,3 +225,23 @@ class Tello:
         """
         self.serial.write(bytearray(f"EXT mled s {color} {char}", encoding="utf-8"))
         self._await_response("matrix ok")
+
+    def write_command(self, message):
+        """
+        Sende einen Befehl direkt an den Quadrokopter bzw. den Controller
+
+        Parameters
+        ----------
+        message: str
+            der Befehl
+        """
+        self.serial.write(bytearray(message, encoding='utf-8'))
+
+    def _await_response(self, expected):
+        msg = self.serial.readline()
+        print("TELLO: " + str(msg[:-2])[1:])
+        if len(msg) <= 2:
+            msg = self.serial.readline()
+            print("TELLO: " + str(msg[:-2])[1:])
+        if expected not in str(msg):
+            raise Exception(msg)
