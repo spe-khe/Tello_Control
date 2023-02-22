@@ -3,8 +3,8 @@
 #include <string.h>
 
 // Set WiFi credentials
-#define WIFI_SSID_1 "TELLO-638AB9"
-#define WIFI_SSID_2 "RMTT-9AFFE8"
+#define WIFI_SSID_1 "TELLO-9EE731"
+#define WIFI_SSID_2 "RMTT-D2635C"
 #define WIFI_PASS ""
 #define UDP_RX_PORT 8890
 #define UDP_TX_PORT 8889
