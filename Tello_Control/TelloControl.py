@@ -83,7 +83,7 @@ class Tello:
             Geschwindigkeit (10-100)
         """
         self.serial.write(bytearray(f"go {x} {y} {z} {speed}", encoding='utf-8'))
-        self.serial.timeout = math.sqrt(x**2 + y**2 + z**2) / speed
+        self.serial.timeout = math.sqrt(x**2 + y**2 + z**2) / speed *4
         self._await_response('ok')
 
     def rotate(self, angle):
@@ -97,7 +97,7 @@ class Tello:
         """
         self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
 
-        self.serial.timeout = abs(angle) / ANGULAR_SPEED
+        self.serial.timeout = abs(angle) / ANGULAR_SPEED *2
 
         self._await_response('ok')
 
