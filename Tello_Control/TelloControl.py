@@ -1,5 +1,9 @@
+import math
+
 import serial
 import time
+
+ANGULAR_SPEED = 360 / 15  # Grad pro Sekunde
 
 
 class Tello:
@@ -16,14 +20,21 @@ class Tello:
         expansion: bool
             True, wenn das Erweiterungsmodul verbaut ist
         """
-        self.serial = serial.Serial(port=port, baudrate=115200)
+        self.serial = serial.Serial(port=port, baudrate=115200, timeout=10)
         self.serial.flushInput()
         self.serial.flushOutput()
         wifi_id = 1
         if expansion:
             wifi_id = 2
-        self.serial.write(bytearray('!connect_' + str(wifi_id), encoding="utf_8"))
-        self._await_response('!connected')
+
+        for i in range(3):
+            self.serial.write(bytearray('!connect_' + str(wifi_id), encoding="utf_8"))
+            try:
+                self._await_response('!connected')
+                break
+            except TimeoutError:
+                continue
+
         time.sleep(0.5)
         self.serial.flushInput()
         self.serial.flushOutput()
@@ -72,6 +83,7 @@ class Tello:
             Geschwindigkeit (10-100)
         """
         self.serial.write(bytearray(f"go {x} {y} {z} {speed}", encoding='utf-8'))
+        self.serial.timeout = math.sqrt(x**2 + y**2 + z**2) / speed
         self._await_response('ok')
 
     def rotate(self, angle):
@@ -84,6 +96,9 @@ class Tello:
             Winkel in Grad
         """
         self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
+
+        self.serial.timeout = abs(angle) / ANGULAR_SPEED
+
         self._await_response('ok')
 
     def stop(self):
@@ -91,7 +106,8 @@ class Tello:
         Stoppe die Bewegung der Drone
         """
         self.serial.write(b'throwfly')
-        msg = self.serial.readline()
+        self.serial.timeout = 5
+        msg = self._get_response()
 
     def flip(self, direction):
         """
@@ -103,6 +119,7 @@ class Tello:
             'f', 'b', 'l' oder 'r' für vorwärts, rückwärts, links oder rechts
         """
         self.serial.write(bytearray('flip ' + direction, encoding="utf-8"))
+        self.serial.timeout = 5
         self._await_response('ok')
 
     def get_battery(self):
@@ -114,9 +131,15 @@ class Tello:
         battery: int
             Batteriestand (0-100)
         """
-        self.serial.write(b'battery?')
-        msg = self.serial.readline()
-        return int(msg)
+        self.serial.timeout = 3
+        for i in range(3):
+            self.serial.write(b'battery?')
+            try:
+                msg = self._get_response()
+                return int(msg)
+            except TimeoutError:
+                continue
+        raise TimeoutError
 
     def get_speed(self):
         """
@@ -127,9 +150,14 @@ class Tello:
         speed: float
             aktuelle Geschwindigkeit in cm/s
         """
-        self.serial.write(b'speed?')
-        msg = self.serial.readline()
-        return float(msg)
+        for i in range(3):
+            self.serial.write(b'speed?')
+            try:
+                msg = self._get_response()
+                return float(msg)
+            except TimeoutError:
+                continue
+        raise TimeoutError
 
     def get_distance(self):
         """
@@ -141,11 +169,14 @@ class Tello:
         distance: int
             Entfernung in mm
         """
-        self.serial.write(b'EXT tof?')
-        msg = self.serial.readline()
-        if len(msg) <= 2:
-            msg = self.serial.readline()
-        return int(msg[4:])
+        for i in range(3):
+            self.serial.write(b'EXT tof?')
+            try:
+                msg = self._get_response()
+                return int(msg[4:])
+            except TimeoutError:
+                continue
+        raise TimeoutError
 
     def led(self, r: int, g: int, b: int):
         """
@@ -161,7 +192,12 @@ class Tello:
             Blau-Wert der LED (0-255)
         """
         self.serial.write(bytearray(f"EXT led {r} {g} {b}", encoding="utf-8"))
-        self._await_response("led ok")
+        self.serial.timeout = 1
+        try:
+            self._await_response("led ok")
+        except TimeoutError:
+            time.sleep(1)
+            self.serial.reset_input_buffer()
 
     def led_blink(self, r1, g1, b1, r2, g2, b2, frequency):
         """
@@ -185,14 +221,24 @@ class Tello:
             Blinkfrequenz (0.1-10)
         """
         self.serial.write(bytearray(f"EXT led bl {frequency} {r1} {g1} {b1} {r2} {g2} {b2}", encoding="utf-8"))
-        self._await_response("led ok")
+        self.serial.timeout = 1
+        try:
+            self._await_response("led ok")
+        except TimeoutError:
+            time.sleep(1)
+            self.serial.reset_input_buffer()
 
     def matrix_clear(self):
         """
         Lösche die Anzeige der LED-Matrix
         """
         self.serial.write(b'EXT mled sc')
-        self._await_response("matrix ok")
+        self.serial.timeout = 1
+        try:
+            self._await_response("matrix ok")
+        except TimeoutError:
+            time.sleep(1)
+            self.serial.reset_input_buffer()
 
     def matrix_print(self, message, color, freq, direction='l'):
         """
@@ -210,7 +256,12 @@ class Tello:
             Scroll-Richtung: 'l'/'r'/'u'/'d' für links/rechts/hoch/runter
         """
         self.serial.write(bytearray(f"EXT mled {direction} {color} {freq} {message}", encoding="utf-8"))
-        self._await_response("matrix ok")
+        self.serial.timeout = 1
+        try:
+            self._await_response("matrix ok")
+        except TimeoutError:
+            time.sleep(1)
+            self.serial.reset_input_buffer()
 
     def matrix_print_char(self, char, color):
         """
@@ -224,7 +275,12 @@ class Tello:
             Farbe des Zeichens: 'r', 'b' oder 'p' für Rot, Blau oder Violett
         """
         self.serial.write(bytearray(f"EXT mled s {color} {char}", encoding="utf-8"))
-        self._await_response("matrix ok")
+        self.serial.timeout = 1
+        try:
+            self._await_response("matrix ok")
+        except TimeoutError:
+            time.sleep(1)
+            self.serial.reset_input_buffer()
 
     def write_command(self, message):
         """
@@ -238,10 +294,16 @@ class Tello:
         self.serial.write(bytearray(message, encoding='utf-8'))
 
     def _await_response(self, expected):
+        msg = self._get_response()
+        if expected not in str(msg):
+            raise Exception(msg)
+
+    def _get_response(self):
         msg = self.serial.readline()
         print("TELLO: " + str(msg[:-2])[1:])
         if len(msg) <= 2:
             msg = self.serial.readline()
-            print("TELLO: " + str(msg[:-2])[1:])
-        if expected not in str(msg):
-            raise Exception(msg)
+            print("TELLO: " + str(msg)[1:])
+        if len(msg) <= 0 or msg[-1] != 10:
+            raise TimeoutError
+        return msg

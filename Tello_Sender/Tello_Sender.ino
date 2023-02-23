@@ -178,6 +178,9 @@ void wifiConnect(const char* ssid)
 	UDP.begin(UDP_TX_PORT);
 	// Connected to WiFi
 	delay(500);
+  while ( Serial.available()){
+    Serial.read();
+  }
 	Serial.println("!connected");
 	//Serial.println();
 	lastMillis = 0;
