@@ -179,8 +179,6 @@ void wifiConnect(const char* ssid)
 	// Connected to WiFi
 	delay(500);
 	Serial.println("!connected");
-	Serial.println("!connected");
-	Serial.println("!connected");
 	//Serial.println();
 	lastMillis = 0;
 	emergency = false;
