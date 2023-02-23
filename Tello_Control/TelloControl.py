@@ -27,13 +27,19 @@ class Tello:
         if expansion:
             wifi_id = 2
 
-        for i in range(3):
+        while True:
             self.serial.write(bytearray('!connect_' + str(wifi_id), encoding="utf_8"))
             try:
                 self._await_response('!connected')
                 break
             except TimeoutError:
                 continue
+            except ValueError as ex:
+                if "Error" in str(ex.args[0]):
+                    self.serial.flushInput()
+                    continue
+                else:
+                    raise ValueError from ex
 
         time.sleep(0.5)
         self.serial.flushInput()
@@ -50,6 +56,7 @@ class Tello:
         Hebe ab
         """
         self.serial.write(b'takeoff')
+        self.serial.timeout = 5
         self._await_response('ok')
 
     def throwfly(self):
@@ -57,6 +64,7 @@ class Tello:
         Werfe die Drohne innerhalb von 5 Sekunden, um sie in die Luft zu befördern
         """
         self.serial.write(b'throwfly')
+        self.serial.timeout = 10
         print("Werfe den Quadrokopter in die Luft!")
         self._await_response('ok')
 
@@ -65,6 +73,7 @@ class Tello:
         Lande den Quadrokopter
         """
         self.serial.write(b'land')
+        self.serial.timeout = 10
         self._await_response('ok')
 
     def go_relative(self, x, y, z, speed):
@@ -83,7 +92,7 @@ class Tello:
             Geschwindigkeit (10-100)
         """
         self.serial.write(bytearray(f"go {x} {y} {z} {speed}", encoding='utf-8'))
-        self.serial.timeout = math.sqrt(x**2 + y**2 + z**2) / speed *4
+        self.serial.timeout = 2 + (math.sqrt(x ** 2 + y ** 2 + z ** 2) / speed * 4)
         self._await_response('ok')
 
     def rotate(self, angle):
@@ -97,7 +106,7 @@ class Tello:
         """
         self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
 
-        self.serial.timeout = abs(angle) / ANGULAR_SPEED *2
+        self.serial.timeout = abs(angle) / ANGULAR_SPEED * 2
 
         self._await_response('ok')
 
@@ -150,6 +159,7 @@ class Tello:
         speed: float
             aktuelle Geschwindigkeit in cm/s
         """
+        self.serial.timeout = 3
         for i in range(3):
             self.serial.write(b'speed?')
             try:
@@ -169,6 +179,7 @@ class Tello:
         distance: int
             Entfernung in mm
         """
+        self.serial.timeout = 3
         for i in range(3):
             self.serial.write(b'EXT tof?')
             try:
@@ -296,7 +307,7 @@ class Tello:
     def _await_response(self, expected):
         msg = self._get_response()
         if expected not in str(msg):
-            raise Exception(msg)
+            raise ValueError(msg)
 
     def _get_response(self):
         msg = self.serial.readline()

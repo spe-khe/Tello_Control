@@ -145,6 +145,7 @@ void loop() {
 		{
 		case CONN_ERR:
 			Serial.println("!ConnectionError");
+      lastMillis = millis();
 			break;
 
 		case E_LAND:
