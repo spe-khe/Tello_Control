@@ -1,14 +1,10 @@
 from TelloControl import Tello
 import time
 
-# t = Tello("COM6")  # Der Port muss ggf. angepasst werden.
-t = Tello("COM3", True)  # Falls das Erweiterungsmodul benutzt wird, muss diese Zeile stattdessen verwendet werden
-t.led(0,0,0)
-t.takeoff()
-dist = t.get_distance()
-while dist >= 500:
-    t.go_relative(40, 0, 0, 100)
-    dist = t.get_distance()
-    t.matrix_print(str(dist), "b", 2.5)
-t.led_blink(255, 0, 0, 0, 0, 255, 10)
-t.land()
+t = Tello("COM6")  # Der Port muss ggfs. angepasst werden.
+# t = Tello("COM6", True)  # Falls das Erweiterungsmodul benutzt wird, muss diese Zeile stattdessen verwendet werden
+t.takeoff()  # Abheben
+t.go_relative(100, 0, 0, 100)  # 100 cm mit Geschwindigkeit 100 nach vorne fliegen
+bat = t.get_battery()  # Batteriestand abfragen
+print(bat)
+t.land()  # Landen
