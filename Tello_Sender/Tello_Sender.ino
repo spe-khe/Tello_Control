@@ -3,8 +3,8 @@
 #include <string.h>
 
 // Set WiFi credentials
-#define WIFI_SSID_1 "TELLO-9EE731"
-#define WIFI_SSID_2 "RMTT-D2635C"
+#define WIFI_SSID_1 "TELLO-953B98"
+#define WIFI_SSID_2 "RMTT-CFAEE6"
 #define WIFI_PASS ""
 #define UDP_RX_PORT 8890
 #define UDP_TX_PORT 8889
@@ -174,6 +174,7 @@ void wifiConnect(const char* ssid)
 	// Loop continuously while WiFi is not connected
 	while (WiFi.status() != WL_CONNECTED)
 	{
+    //Serial.print(".");
 		delay(100);
 	}
 	UDP.begin(UDP_TX_PORT);
@@ -182,7 +183,9 @@ void wifiConnect(const char* ssid)
   while ( Serial.available()){
     Serial.read();
   }
-	Serial.println("!connected");
+  Serial.println("!connected");
+  Serial.println("!connected");
+  Serial.println("!connected");
 	//Serial.println();
 	lastMillis = 0;
 	emergency = false;

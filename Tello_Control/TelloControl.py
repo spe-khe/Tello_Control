@@ -3,7 +3,7 @@ import math
 import serial
 import time
 
-ANGULAR_SPEED = 360 / 15  # Grad pro Sekunde
+_ANGULAR_SPEED = 360 / 15  # Grad pro Sekunde
 
 
 class Tello:
@@ -106,7 +106,7 @@ class Tello:
         """
         self.serial.write(bytearray(f'cw {angle}', encoding="utf-8"))
 
-        self.serial.timeout = abs(angle) / ANGULAR_SPEED * 2
+        self.serial.timeout = abs(angle) / _ANGULAR_SPEED * 2
 
         self._await_response('ok')
 
@@ -292,6 +292,54 @@ class Tello:
         except TimeoutError:
             time.sleep(1)
             self.serial.reset_input_buffer()
+
+    def mp_go_absolute(self, x, y, z, speed, mission_pad_id):
+        """
+        Fliege zu der angegebenen Position im Koordinatensystem des angegebenen Mission-Pads.
+        Dazu muss das Mission-Pad im erkennbaren Bereich unter der Drohne liegen oder bereits erkannt worden sein.
+
+        Parameters
+        ----------
+        x: int
+            x-Koordinate (-500...500)
+        y: int
+            y-Koordinate (-500...500)
+        z: int
+            z-Koordinate (-500...500)
+        speed: int
+            Geschwindigkeit (10-100)
+        mission_pad_id: int
+            Nummer des Mission-Pads
+        """
+        self.serial.write(bytearray(f"go {x} {y} {z} {speed} m{mission_pad_id}", encoding='utf-8'))
+        self.serial.timeout = 2 + (math.sqrt(x ** 2 + y ** 2 + z ** 2) / speed * 4)
+        self._await_response('ok')
+
+    def mp_jump(self, x, y, z, speed, yaw, mission_pad_id_1, mission_pad_id_2):
+        """
+        Fliege zum angegebenen Punkt relativ zum ersten Mission-Pad, dann suche dort das zweite Mission-Pad und
+        bleibe 1 m darüber mit der angegebenen Rotation stehen.
+
+        Parameters
+        ----------
+        x: int
+            x-Koordinate (-500...500)
+        y: int
+            y-Koordinate (-500...500)
+        z: int
+            z-Koordinate (-500...500)
+        speed: int
+            Geschwindigkeit (10-100)
+        yaw: int
+            Rotation relativ zum zweiten Mission-Pad
+        mission_pad_id_1: int
+            Nummer des ersten Mission-Pads
+        mission_pad_id_2: int
+            Nummer des zweiten Mission-Pads
+        """
+        self.serial.write(bytearray(f"jump {x} {y} {z} {speed} {yaw} m{mission_pad_id_1} m{mission_pad_id_2}", encoding='utf-8'))
+        self.serial.timeout = 2 + (math.sqrt(x ** 2 + y ** 2 + z ** 2) / speed * 4)
+        self._await_response('ok')
 
     def write_command(self, message):
         """
