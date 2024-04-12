@@ -56,7 +56,7 @@ class Tello:
         Hebe ab
         """
         self.serial.write(b'takeoff')
-        self.serial.timeout = 5
+        self.serial.timeout = 10
         self._await_response('ok')
 
     def throwfly(self):
